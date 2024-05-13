@@ -1,67 +1,80 @@
 <template>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container">
-    <router-link class="navbar-brand" :to="{name: 'home'}">Myspace</router-link>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarText">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <router-link class="nav-link" :to="{name: 'home'}">首页</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link" :to="{name: 'communities'}">你的小组</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link"  :to="{name:'chat'}">来吐槽吧</router-link>
-        </li>
-      </ul>
-      <ul class="navbar-nav" v-if="!$store.state.user.is_login">
-        <li class="nav-item">
-          <router-link class="nav-link" :to="{name: 'login'}">登录</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link class="nav-link" :to="{name: 'register'}">注册</router-link>
-        </li>
-      </ul>
-      <ul class="navbar-nav" v-else>
-        <li class="nav-item">
-          <router-link
-            class="nav-link" 
-            :to="{name: 'userprofile', params: {userId: $store.state.user.id}}"
-          >
-            Hi, {{ $store.state.user.name }}
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+      <router-link class="navbar-brand" :to="{name: 'home'}">Myspace</router-link>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+        aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <!-- 左侧导航菜单 -->
+          <li class="nav-item">
+            <router-link class="nav-link" :to="{name: 'home'}">首页</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" :to="{name: 'communities'}">你的小组</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" :to="{name: 'chat'}">来吐槽吧</router-link>
+          </li>
+        </ul>
+        <!-- 消息通知，垂直居中且在右侧的某位置 -->
+        <div class="notification-container ml-auto d-flex align-items-center">
+          <router-link class="nav-link" :to="{name: 'notifications'}">
+            <el-badge value="new">
+              <i class="el-icon-bell"></i>
+            </el-badge>
           </router-link>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" style="cursor: pointer" @click="logout">退出</a>
-        </li>
-      </ul>
+        </div>
+        <!-- 右侧用户菜单 -->
+        <ul class="navbar-nav" v-if="!$store.state.user.is_login">
+          <li class="nav-item">
+            <router-link class="nav-link" :to="{name: 'login'}">登录</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" :to="{name: 'register'}">注册</router-link>
+          </li>
+        </ul>
+        <ul class="navbar-nav" v-else>
+          <li class="nav-item">
+            <router-link class="nav-link"
+              :to="{name: 'userprofile', params: {userId: $store.state.user.id}}"
+            >
+              Hi, {{ $store.state.user.name }}
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" style="cursor: pointer" @click="logout">退出</a>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
 </template>
-
 
 <script>
 import { useStore } from 'vuex';
 
 export default {
-    name: "NavBar",
-    setup() {
-      const store = useStore();
-      const logout = () => {
-        store.dispatch('user/logout');
-      };
-
-      return {
-        logout,
-      }
-    }
-}
+  name: "NavBar",
+  setup() {
+    const store = useStore();
+    const logout = () => {
+      store.dispatch('user/logout');
+    };
+    return {
+      logout,
+    };
+  },
+};
 </script>
 
 <style scoped>
-
+.notification-container {
+  flex: 0 0 60%; /* 增加flex比例，将容器向右移动 */
+  display: flex;
+  justify-content: flex-end; /* 将内容向右对齐 */
+  padding-right: 5%; /* 增加一些右边距，以实现细微调整 */
+}
 </style>

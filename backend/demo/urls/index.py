@@ -1,4 +1,5 @@
 from django.urls import path
+from demo import views
 from demo.views.index import recommend_communities, operation, regis
 from demo.views.getInformation.index import GetInfoView
 from rest_framework_simplejwt.views import (
@@ -14,4 +15,5 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', regis, name='regis'),
+    path('community/join_request/<int:join_request_id>/<str:action>/', views.handle_join_request, name='handle_join_request'),
 ]

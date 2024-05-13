@@ -8,3 +8,4 @@ from .similarity import StudentSimilarity, CourseSimilarity
 from .student_profile import StudentProfile
 from .message import Message
 from .homo_student_similarity import HomoStudentSimilarity
+from .notifications import CommunityJoinRequest

@@ -2,7 +2,7 @@
 from django.db.models import Count
 from rest_framework import views, permissions, response
 from django.core.exceptions import ObjectDoesNotExist  # 如果你使用的是自定义异常处理
-from demo.models import Community
+from demo.models import Community, CommunityJoinRequest
 from demo.repositories.community_repository import CommunityRepository
 from demo.repositories.student_repository import StudentRepository
 
@@ -44,6 +44,7 @@ class GetInfoView(views.APIView):
         }
 
     def get_student_info(self, student):
+
         # 获取已完成的课程
         completed_courses_json = [{'id': cc.course.course_id, 'name': cc.course.name, 'score': cc.score}
                                   for cc in student.completedcourse_set.all()]
@@ -57,6 +58,16 @@ class GetInfoView(views.APIView):
         communities_with_more_than_one_member = Community.objects.annotate(
             num_members=Count('members', distinct=True)
         ).filter(num_members__gt=1)
+
+        # 获取该学生对其他共同体的加入申请信息
+        student_join_requests = CommunityJoinRequest.objects.filter(student=student).select_related('community')
+        student_join_requests_json = [
+            {
+                'community_id': req.community.id,
+                'community_name': req.community.name,
+                'status': req.status
+            } for req in student_join_requests
+        ]
 
         # 对于学生参与的社区，我们可以再使用一个过滤器来进一步筛选
         student_communities_with_more_than_one_member = communities_with_more_than_one_member.filter(
@@ -72,6 +83,25 @@ class GetInfoView(views.APIView):
             for cm in student_communities_with_more_than_one_member
         ]
 
+        # 获取该学生所在共同体的所有申请信息
+        communities_applications_json = []
+        for community in communities_with_more_than_one_member.all():
+            # 获取当前社区的所有加入申请信息
+            join_requests = CommunityJoinRequest.objects.filter(community=community).select_related('student')
+            if not join_requests.exists():
+                continue
+            join_requests_json = [
+                {
+                    'applicant_name': req.student.name,
+                    'status': req.status
+                } for req in join_requests
+            ]
+
+            communities_applications_json.append({
+                'community_id': community.id,
+                'community_name': community.name,
+                'applications': join_requests_json
+            })
         return {
             'id': student.student_id,
             'name': student.name,
@@ -83,7 +113,8 @@ class GetInfoView(views.APIView):
             'wish_courses': wish_courses_json,
             'communities_count': len(communities_json),
             'communities': communities_json,
-
+            'student_join_requests': student_join_requests_json,
+            'communities_applications': communities_applications_json,
         }
 
     def get(self, request, *args, **kwargs):

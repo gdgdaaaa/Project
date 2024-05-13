@@ -45,6 +45,13 @@ const routes = [
     meta: { requiresAuth: true }
 
   },
+  // 新添加的notifications路由
+  {
+    path: '/notifications/',
+    name: 'notifications',
+    component: () => import('../views/NotificationsView.vue'), // 这里需要确保路径正确，且NotificationsView.vue存在
+    meta: { requiresAuth: true } // 根据需要调整是否需要登录权限
+  },
   {
     path: '/404/',
     name: '404',

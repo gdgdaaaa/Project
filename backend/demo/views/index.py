@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from demo.models import StudentProfile
+from demo.models import StudentProfile, CommunityJoinRequest
 from demo.repositories.community_repository import CommunityRepository
 from demo.repositories.course_repository import CourseRepository
 from demo.repositories.student_repository import StudentRepository
@@ -54,20 +54,32 @@ def recommend_communities(request):
 
 @require_http_methods(['GET', 'POST'])
 def operation(request):
-    if not request.method == 'POST':
-        return JsonResponse({'error': 'Method Not Allowed'}, status=405, safe=False)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method Not Allowed'}, status=405)
 
     data = json.loads(request.body.decode('utf-8'))
     opera = data.get('operation')
     student_id = data.get('student_id')
     community_id = data.get('community_id')
-    # 检查是否提供了必要的参数
+
     if not all([opera, student_id, community_id]):
         return JsonResponse({'error': 'Missing required parameters.'}, status=400)
-    # 根据 operation 触发对应的操作
+
     if opera == 'join':
         try:
-            student_join_community(student_id, community_id)
+            join_request, created = CommunityJoinRequest.objects.get_or_create(
+                student_id=student_id,
+                community_id=community_id,
+            )
+            if created:
+                # 通知社区成员进行投票
+                return JsonResponse({'message': 'Join request created, waiting for approval.'}, status=201)
+            else:
+                if join_request.status == 'approved':
+                    student_join_community(student_id, community_id)
+                    return JsonResponse({'message': 'Join request approved, student joined the community.'}, status=200)
+                else:
+                    return JsonResponse({'message': 'Join request already exists, still pending or rejected.'}, status=200)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
     elif opera == 'leave':
@@ -75,6 +87,7 @@ def operation(request):
             student_leave_community(student_id, community_id)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
     else:
         return JsonResponse({'error': 'Invalid operation.'}, status=400)
 
@@ -116,3 +129,4 @@ def regis(request):
     CommunityRepository.add_member_to_community(community.id, student_id)
 
     return JsonResponse({"success": "用户注册成功。"}, status=201)
+

@@ -8,7 +8,7 @@ from .models.similarity import StudentSimilarity, CourseSimilarity
 from .models.student_profile import StudentProfile
 from .models.message import Message
 from .models.homo_student_similarity import HomoStudentSimilarity
-
+from .models.notifications import CommunityJoinRequest
 
 # demo/admin.py
 # ...省略了其他导入...
@@ -103,3 +103,4 @@ admin.site.register(CompletedCourse)
 admin.site.register(WishCourse)
 admin.site.register(StudentProfile)
 admin.site.register(Message)
+admin.site.register(CommunityJoinRequest)
